@@ -1,12 +1,20 @@
+// Main package for Cowsay as a Service
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
 
-	"github.com/mouboo/cowsayaas/internal/cowsay"
+	"github.com/mouboo/cowsayaas/internal/webserver"
 )
 
 func main() {
-	s := cowsay.RenderCowsay("Moo!")
-	fmt.Println(s)
+
+	// Set up multiplexer for HTTP requests, routing them
+	// to different handlers
+	mux := webserver.SetupRoutes()
+
+	// Start the web server
+	log.Println("Starting server")
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }
