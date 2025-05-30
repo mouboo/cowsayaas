@@ -53,11 +53,12 @@ func lineBreak(s string, max int) []string {
 
 func RenderCowsay(message string) string {
 
-	// TODO: move to argument, no magic numbers
-	bubbleMaxWidth := 25
+	// Speech bubble width, in characters
+	bubbleWidth := 22
 
-	// Slice to hold the message lines
-	messageLines := lineBreak(message, bubbleMaxWidth - 4)
+	// Slice to hold the message lines, 4 chars needed for
+	// the bubble left and right decorations
+	messageLines := lineBreak(message, bubbleWidth - 4)
 	
 	// Test
 	fmt.Printf("%v\n", messageLines)
@@ -65,8 +66,7 @@ func RenderCowsay(message string) string {
 	// The string to return
 	output := ""
 
-	// Speech bubble width, in characters
-	bubbleWidth := 22
+
 	
 	// Speech bubble elements
 	topBorder := '_'
@@ -84,21 +84,32 @@ func RenderCowsay(message string) string {
 	}
 	builder.WriteRune(' ')
 	builder.WriteRune('\n')
+	
 	// Lines of text
-
+	for _, l := range messageLines {
+		builder.WriteString("  ")
+		builder.WriteString(l)
+		builder.WriteRune(' ')
+		builder.WriteRune('\n')
+	}
+	
 	// Bottom
 	builder.WriteRune(' ')
 	for i := 0; i < bubbleWidth - 2; i++ {
 		builder.WriteRune(bottomBorder)
 	}
 	builder.WriteRune(' ')
-	builder.WriteRune('\n')
 
 	output += builder.String()
 
-	output += "\n"
 	// Add cow
-	output += fmt.Sprintf("The cow says: %v\n", message)
-	
+	output += `
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+`
+		
 	return output
 }
