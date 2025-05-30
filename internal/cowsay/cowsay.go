@@ -51,14 +51,16 @@ func lineBreak(s string, max int) []string {
 	return lines
 }
 
-func RenderCowsay(message string) string {
+func RenderCowsay(message string, width int) string {
 
 	// Speech bubble width, in characters
-	bubbleWidth := 22
+	bubbleWidth := width
 
 	// Slice to hold the message lines, 4 chars needed for
 	// the bubble left and right decorations
 	messageLines := lineBreak(message, bubbleWidth - 4)
+	
+	// TODO: update/shrink bubbleWidth if message is shorter
 	
 	// Test
 	fmt.Printf("%v\n", messageLines)

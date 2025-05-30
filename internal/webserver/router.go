@@ -6,6 +6,6 @@ import(
 
 func SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/cowsay", CowsayHandler)
+	mux.HandleFunc("/plain", PlainHandler)
 	return mux
 }
