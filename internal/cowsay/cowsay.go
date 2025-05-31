@@ -4,7 +4,6 @@ import (
 	"strings"
 )
 
-// TODO: bug inserts blank line at top with "hello world" and width < 6
 func lineBreak(s string, max int) []string {
 	words := strings.Fields(s)
 
@@ -22,13 +21,13 @@ func lineBreak(s string, max int) []string {
 		}
 	}
 	words = tmpWords
-
+	
 	// Now all words are less than or equal to max line length.
 	lines := []string{}
 	currentLine := ""
 	for _, w := range words {
-		currentWordLength := len([]rune(w))
-		currentSpaceLeft := max - len([]rune(currentLine))
+		currentWordLength := len([]rune(w)) // 3
+		currentSpaceLeft := max - len([]rune(currentLine)) // 0
 		// See if there is room for another word
 		// (and a space)
 		if currentWordLength <= currentSpaceLeft-1 {
@@ -40,7 +39,9 @@ func lineBreak(s string, max int) []string {
 			// Not enough space to add more words.
 			// Push to lines, and reset currentLine
 			// to only contain the current word.
-			lines = append(lines, currentLine)
+			if currentLine != "" {
+				lines = append(lines, currentLine)
+			}
 			currentLine = w
 		}
 	}
@@ -48,6 +49,7 @@ func lineBreak(s string, max int) []string {
 	if currentLine != "" {
 		lines = append(lines, currentLine)
 	}
+
 	return lines
 }
 
