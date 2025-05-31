@@ -4,59 +4,55 @@ import (
 	"strings"
 )
 
+// lineBreak() takes a string and an int. It splits the string into a slice of
+// string where each string fits in max length
 func lineBreak(s string, max int) []string {
-	words := strings.Fields(s)
-
-	// First deal with possible words that are longer than
-	// max length and need to be broken up.
-	tmpWords := []string{}
-	for _, w := range words {
-		rs := []rune(w)
-		for len(rs) > max {
-			tmpWords = append(tmpWords, string(rs[:max]))
-			rs = rs[max:]
+	// Split the string into words. If a single word is longer than max, 
+	// break it into max sized chunks.
+	var words []string
+	for _, word := range strings.Fields(s) {
+		runes := []rune(word)
+		for len(runes) > max {
+			words = append(words, string(runes[:max]))
+			runes = runes[max:]
 		}
-		if len(rs) > 0 {
-			tmpWords = append(tmpWords, string(rs))
+		if len(runes) > 0 {
+			words = append(words, string(runes))
 		}
 	}
-	words = tmpWords
 	
-	// Now all words are less than or equal to max line length.
-	lines := []string{}
-	currentLine := ""
-	for _, w := range words {
-		currentWordLength := len([]rune(w)) // 3
-		currentSpaceLeft := max - len([]rune(currentLine)) // 0
-		// See if there is room for another word
-		// (and a space)
-		if currentWordLength <= currentSpaceLeft-1 {
-			if len(currentLine) != 0 {
-				currentLine += " "
-			}
-			currentLine += w
+	// Build up lines of allowed length and append to a new slice of string.
+	var lines []string
+	var currentLine string
+	for _, word := range words {
+		// words are appended with a space in front, unless it's the first word
+		// of a line
+		spaceNeeded := 1
+		if currentLine == "" {
+			spaceNeeded = 0
+		}
+		// if there's space in the current line, add a word
+		if len([]rune(currentLine)) + len([]rune(word)) + spaceNeeded <= max {
+			currentLine += strings.Repeat(" ", spaceNeeded)
+			currentLine += word
 		} else {
-			// Not enough space to add more words.
-			// Push to lines, and reset currentLine
-			// to only contain the current word.
+			// if a new line is needed
 			if currentLine != "" {
 				lines = append(lines, currentLine)
 			}
-			currentLine = w
+			currentLine = word
 		}
 	}
-	// For the last unfinished line, push to lines
+	// add remaining words in underfull last line
 	if currentLine != "" {
 		lines = append(lines, currentLine)
 	}
-
 	return lines
 }
 
 func RenderCowsay(message string, width int) string {
 
-	// Slice of string to hold the message lines, 4 runes reserved 
-	// for the bubble left and right borders
+	// Slice of string to hold the message lines
 	messageLines := lineBreak(message, width)
 	
 	// Update/shrink width if the longest line is shorter
@@ -80,36 +76,30 @@ func RenderCowsay(message string, width int) string {
 	output := ""
 
 	// Speech bubble elements
-	topBorder := '_'
+	topBorder := "_"
 	//leftBorder := '<'
 	//rightBorder := '>'
-	bottomBorder := '-'
+	bottomBorder := "-"
 	
 	// Build the speech bubble with text
 	var builder strings.Builder
 
 	// Top
 	builder.WriteRune(' ')
-	for i := 0; i < width + 2; i++ {
-		builder.WriteRune(topBorder)
-	}
-	builder.WriteRune(' ')
-	builder.WriteRune('\n')
+	builder.WriteString(strings.Repeat(topBorder, width + 2))
+	builder.WriteString(" \n")
 	
 	// Lines of text
 	for _, l := range messageLines {
 		builder.WriteString("< ")
 		builder.WriteString(l)
-		builder.WriteString(" >")
-		builder.WriteRune('\n')
+		builder.WriteString(" >\n")
 	}
 	
 	// Bottom
 	builder.WriteRune(' ')
-	for i := 0; i < width + 2; i++ {
-		builder.WriteRune(bottomBorder)
-	}
-	builder.WriteRune(' ')
+	builder.WriteString(strings.Repeat(bottomBorder, width + 2))
+	builder.WriteString(" ")
 
 	output += builder.String()
 
