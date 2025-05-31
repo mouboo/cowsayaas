@@ -4,6 +4,7 @@ import (
 	"strings"
 )
 
+// TODO: bug inserts blank line at top with "hello world" and width < 6
 func lineBreak(s string, max int) []string {
 	words := strings.Fields(s)
 
@@ -52,22 +53,19 @@ func lineBreak(s string, max int) []string {
 
 func RenderCowsay(message string, width int) string {
 
-	// (Maximum) speech bubble width, in runes
-	bubbleWidth := width
-
 	// Slice of string to hold the message lines, 4 runes reserved 
 	// for the bubble left and right borders
-	messageLines := lineBreak(message, bubbleWidth - 4)
+	messageLines := lineBreak(message, width)
 	
-	// Update/shrink bubbleWidth if the longest line is shorter
-	// than bubbleWidth
+	// Update/shrink width if the longest line is shorter
+	// than width
 	longestLine := 0
 	for _, l := range messageLines {
 		if len([]rune(l)) > longestLine {
 			longestLine = len([]rune(l))
 		}
 	}
-	bubbleWidth = longestLine + 4
+	width = longestLine
 	
 	// Pad shorter lines with trailing spaces so all lines are
 	// the same length
@@ -90,7 +88,7 @@ func RenderCowsay(message string, width int) string {
 
 	// Top
 	builder.WriteRune(' ')
-	for i := 0; i < bubbleWidth - 2; i++ {
+	for i := 0; i < width + 2; i++ {
 		builder.WriteRune(topBorder)
 	}
 	builder.WriteRune(' ')
@@ -106,7 +104,7 @@ func RenderCowsay(message string, width int) string {
 	
 	// Bottom
 	builder.WriteRune(' ')
-	for i := 0; i < bubbleWidth - 2; i++ {
+	for i := 0; i < width + 2; i++ {
 		builder.WriteRune(bottomBorder)
 	}
 	builder.WriteRune(' ')
