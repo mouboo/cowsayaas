@@ -8,26 +8,24 @@ import(
 	"github.com/mouboo/cowsayaas/internal/cowsay"
 )
 
-// TODO: fix bug if width is less than 5 (messes up slice boundaries)
-// Fix could be to let width refer to text width sans borders?
+// PlainHandler handles the plain text API
 func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	//Default width
 	width := 44
 	// If the user provided a "?width=<number>" and it can be parsed
 	// to an int, use that number instead.
-	widthStr := r.URL.Query().Get("width")
+	widthStr := r.URL.Query().Get("width")	
 	if widthStr != "" {
-		if widthParsed, err := strconv.Atoi(widthStr); err == nil {
-			if widthParsed > 0 {
-				width = widthParsed
-			} else {
-				http.Error(w, "Width must be a positive number", http.StatusBadRequest)
-				return
-			}
-		} else {
+		widthParsed, err := strconv.Atoi(widthStr)
+		if err != nil {
 			http.Error(w, "Invalid width parameter", http.StatusBadRequest)
 			return
 		}
+		if widthParsed < 1 {
+			http.Error(w, "width must be a positive number", http.StatusBadRequest)
+			return
+		}
+		width = widthParsed
 	}
 	
 	text := r.URL.Query().Get("text")
