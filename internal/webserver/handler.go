@@ -42,5 +42,6 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	response := cowsay.RenderCowsay(text, width)
 	// Write to the ResponseWriter
     w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprint(w, response)
+	fmt.Fprintln(w, response)
+	return
 }
