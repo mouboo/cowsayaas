@@ -1,7 +1,6 @@
 package cowsay
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -53,23 +52,33 @@ func lineBreak(s string, max int) []string {
 
 func RenderCowsay(message string, width int) string {
 
-	// Speech bubble width, in characters
+	// (Maximum) speech bubble width, in runes
 	bubbleWidth := width
 
-	// Slice to hold the message lines, 4 chars needed for
-	// the bubble left and right decorations
+	// Slice of string to hold the message lines, 4 runes reserved 
+	// for the bubble left and right borders
 	messageLines := lineBreak(message, bubbleWidth - 4)
 	
-	// TODO: update/shrink bubbleWidth if message is shorter
+	// Update/shrink bubbleWidth if the longest line is shorter
+	// than bubbleWidth
+	longestLine := 0
+	for _, l := range messageLines {
+		if len([]rune(l)) > longestLine {
+			longestLine = len([]rune(l))
+		}
+	}
+	bubbleWidth = longestLine + 4
 	
-	// Test
-	fmt.Printf("%v\n", messageLines)
+	// Pad shorter lines with trailing spaces so all lines are
+	// the same length
+	for i, l := range messageLines {
+		spacesToAdd := longestLine - len([]rune(l))
+		messageLines[i] += strings.Repeat(" ", spacesToAdd)
+	}
 
-	// The string to return
+	// Start assembling the string to return
 	output := ""
 
-
-	
 	// Speech bubble elements
 	topBorder := '_'
 	//leftBorder := '<'
@@ -89,9 +98,9 @@ func RenderCowsay(message string, width int) string {
 	
 	// Lines of text
 	for _, l := range messageLines {
-		builder.WriteString("  ")
+		builder.WriteString("< ")
 		builder.WriteString(l)
-		builder.WriteRune(' ')
+		builder.WriteString(" >")
 		builder.WriteRune('\n')
 	}
 	
@@ -104,7 +113,7 @@ func RenderCowsay(message string, width int) string {
 
 	output += builder.String()
 
-	// Add cow
+	// Add cow, TODO: configurable with variables or cowfiles?
 	output += `
         \   ^__^
          \  (oo)\_______
