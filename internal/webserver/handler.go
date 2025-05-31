@@ -10,10 +10,16 @@ import(
 
 // PlainHandler handles the plain text API
 func PlainHandler(w http.ResponseWriter, r *http.Request) {
+	// First make sure the request is valid (GET)
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	//Default width
 	width := 44
 	// If the user provided a "?width=<number>" and it can be parsed
-	// to an int, use that number instead.
+	// to an int, use that number instead. On error send http 400 bad request.
 	widthStr := r.URL.Query().Get("width")	
 	if widthStr != "" {
 		widthParsed, err := strconv.Atoi(widthStr)
@@ -35,6 +41,6 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	response := cowsay.RenderCowsay(text, width)
 	// Write to the ResponseWriter
-	w.Header().Set("Content-Type", "text/plain")
+    w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	fmt.Fprint(w, response)
 }
