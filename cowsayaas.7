@@ -1,0 +1,65 @@
+.\" Manpage for cowsayaas
+.TH COWSAYAAS 7 "May 2025" "Cowsay as a Service" "Miscellaneous Information Manual"
+.SH NAME
+cowsayaas \- HTTP-based Cowsay as a Service
+.SH SYNOPSIS
+.B curl
+\fI"http://cowsay.4d41.se/plain?text=hello+world"\fR
+
+.B curl
+\fI"http://cowsay.4d41.se/plain?text=hello+world&width=30"\fR
+.SH DESCRIPTION
+.B cowsayaas
+is a simple web service that generates ASCII-art speech bubbles using the
+cowsay style.
+
+It accepts HTTP requests and returns formatted text that resembles the output of the original
+.IR cowsay (1)
+utility.
+
+This service is useful for generating cowsay text over HTTP in scripts, terminals, or other services.
+
+.SH USAGE
+You can make a simple GET request with
+.B curl
+or
+.B wget
+to receive cowsay output in plain text.
+
+.TP
+.B Example:
+.nf
+curl "http://cowsay.4d41.se/plain?text=hello+world"
+.fi
+
+.TP
+To customize the maximum width of the bubble:
+.nf
+curl "http://cowsay.4d41.se/plain?text=hello+world&width=30"
+.fi
+
+.TP
+To receive a JSON response:
+.nf
+curl -H "Accept: application/json" "http://cowsay.4d41.se/json?text=hello"
+.fi
+
+.SH PARAMETERS
+.TP
+.B text
+(required) The message to be displayed inside the cowsay bubble.
+
+.TP
+.B width
+(optional) Maximum number of characters per line in the bubble. Defaults to 40.
+
+.SH SEE ALSO
+.BR cowsay (1),
+.BR curl (1),
+.BR wget (1)
+
+.SH AUTHOR
+Written by Peter Kvillegård, 2025.
+
+.SH COPYRIGHT
+Unlicense License. See github.com/mouboo/cowsayaas for details.

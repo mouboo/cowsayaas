@@ -71,37 +71,50 @@ func RenderCowsay(message string, width int) string {
 		spacesToAdd := longestLine - len([]rune(l))
 		messageLines[i] += strings.Repeat(" ", spacesToAdd)
 	}
-
-	// Start assembling the string to return
-	output := ""
-
-	// Speech bubble elements
-	topBorder := "_"
-	//leftBorder := '<'
-	//rightBorder := '>'
-	bottomBorder := "-"
 	
 	// Build the speech bubble with text
 	var builder strings.Builder
 
 	// Top
+	topBorder := "_"
 	builder.WriteRune(' ')
 	builder.WriteString(strings.Repeat(topBorder, width + 2))
 	builder.WriteString(" \n")
 	
-	// Lines of text
-	for _, l := range messageLines {
-		builder.WriteString("< ")
+	// Lines with text. Borders depend on the number of lines.
+	//  ________        _______        _________
+	// < 1 line >      / two   \      / three   \
+	//  --------       \ lines /      | lines   |
+	//                  -------       \ or more /
+	//                                 --------- 
+	numLines := len(messageLines)
+	leftBorder := "< "
+	rightBorder := " >\n"
+	for i, l := range messageLines {
+		if numLines > 1 {
+			if i == 0 {
+				leftBorder = "/ "
+				rightBorder = " \\\n"
+			} else if i == numLines - 1 {
+				leftBorder = "\\ "
+				rightBorder = " /\n"
+			} else {
+				leftBorder = "| "
+				rightBorder = " |\n"
+			}
+		}
+		builder.WriteString(leftBorder)
 		builder.WriteString(l)
-		builder.WriteString(" >\n")
+		builder.WriteString(rightBorder)
 	}
 	
 	// Bottom
+	bottomBorder := "-"
 	builder.WriteRune(' ')
 	builder.WriteString(strings.Repeat(bottomBorder, width + 2))
 	builder.WriteString(" ")
 
-	output += builder.String()
+	output := builder.String()
 
 	// Add cow, TODO: configurable with variables or cowfiles?
 	output += `
@@ -111,6 +124,13 @@ func RenderCowsay(message string, width int) string {
                 ||----w |
                 ||     ||
 `
-		
+// Notes about original cowsay(1) options:
+// width (default 40)
+// eyes (user input"
+// tongue (user input)
+// think (boolean)
+// cowfile
+// mode: borg, dead, greedy, paranoia, stoned, tired, wired, youthful
+// 		 (if mode is supplied, eyes and tongue parameters are ignored)
 	return output
 }

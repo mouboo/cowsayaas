@@ -16,10 +16,17 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	//Default width
-	width := 44
-	// If the user provided a "?width=<number>" and it can be parsed
-	// to an int, use that number instead. On error send http 400 bad request.
+	
+	// Text is a required parameter
+	text := r.URL.Query().Get("text")
+	if text == "" {
+		http.Error(w, "Missing text parameter", http.StatusBadRequest)
+		return
+	}
+	
+	// Width is an optional parameter, representing the maximum width
+	// of the text (sans borders) displayed
+	width := 40
 	widthStr := r.URL.Query().Get("width")	
 	if widthStr != "" {
 		widthParsed, err := strconv.Atoi(widthStr)
@@ -34,14 +41,9 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 		width = widthParsed
 	}
 	
-	text := r.URL.Query().Get("text")
-	if text == "" {
-		http.Error(w, "Missing text parameter", http.StatusBadRequest)
-		return
-	}
 	response := cowsay.RenderCowsay(text, width)
 	// Write to the ResponseWriter
     w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintln(w, response)
+	fmt.Fprint(w, response)
 	return
 }
