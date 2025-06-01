@@ -1,10 +1,124 @@
 package cowsay
 
 import (
+	"bytes"
+	"fmt"
+	"os"
 	"strings"
+	"text/template"
 	
-	//"github.com/mouboo/cowsayaas/internal/spec"
+	"github.com/mouboo/cowsayaas/internal/spec"
 )
+
+// RenderCowsay generates "ascii" art of a cow with a speech bubble based
+// on a given CowSpec.
+func RenderCowsay(c spec.CowSpec) (string, error) {
+
+	// Slice of string to hold the message lines
+	messageLines := lineBreak(c.Text, c.Width)
+	
+	// Update/shrink width if the longest line is shorter
+	// than width
+	longestLine := 0
+	for _, l := range messageLines {
+		if len([]rune(l)) > longestLine {
+			longestLine = len([]rune(l))
+		}
+	}
+	c.Width = longestLine
+	
+	// Pad shorter lines with trailing spaces so all lines are
+	// the same length
+	for i, l := range messageLines {
+		spacesToAdd := longestLine - len([]rune(l))
+		messageLines[i] += strings.Repeat(" ", spacesToAdd)
+	}
+	
+	// Build the speech bubble with text
+	var b strings.Builder
+
+	// Top
+	topBorder := "_"
+	b.WriteRune(' ')
+	b.WriteString(strings.Repeat(topBorder, c.Width + 2))
+	b.WriteString(" \n")
+	
+	// Lines with text. Borders depend on the number of lines.
+	//  ________        _______        _________
+	// < 1 line >      / two   \      / three   \
+	//  --------       \ lines /      | lines   |
+	//                  -------       \ or more /
+	//                                 --------- 
+	numLines := len(messageLines)
+	leftBorder := "< "
+	rightBorder := " >\n"
+	for i, l := range messageLines {
+		if numLines > 1 {
+			if i == 0 {
+				leftBorder = "/ "
+				rightBorder = " \\\n"
+			} else if i == numLines - 1 {
+				leftBorder = "\\ "
+				rightBorder = " /\n"
+			} else {
+				leftBorder = "| "
+				rightBorder = " |\n"
+			}
+		}
+		b.WriteString(leftBorder)
+		b.WriteString(l)
+		b.WriteString(rightBorder)
+	}
+	
+	// Bottom
+	bottomBorder := "-"
+	b.WriteRune(' ')
+	b.WriteString(strings.Repeat(bottomBorder, c.Width + 2))
+	b.WriteString(" \n")
+
+	output := b.String()
+
+	// Add cow, with possible modifications
+	//        \   ^__^
+	//         \  (oo)\_______
+	//            (__)\       )\/\
+	//                ||----w |
+	//                ||     ||
+
+	// Load cow template file
+	templateBytes, err := os.ReadFile("internal/cowsay/cows/default.cow")
+	if err != nil {
+		return "", fmt.Errorf("Failed to read cowfile: %w", err)
+	}
+
+	// Parse the template
+	template, err := template.New("cow").Parse(string(templateBytes))
+	if err != nil {
+		return "", fmt.Errorf("Failed to parse template: %w", err)
+	}
+	
+	// Create buffer for the rendered cow
+	var cowBuf bytes.Buffer
+
+	// Execute the template with the CowSpec as input data
+	err = template.Execute(&cowBuf, c)
+	if err != nil {
+		return "", fmt.Errorf("Failed to execute template: %w", err)
+	}
+
+	// Add cow to output
+	output += cowBuf.String()
+	
+// Notes about original cowsay(1) options:
+// width (default 40)
+// eyes (user input"
+// tongue (user input)
+// think (boolean)
+// cowfile
+// mode: borg, dead, greedy, paranoia, stoned, tired, wired, youthful
+// 		 (if mode is supplied, eyes and tongue parameters are ignored)
+	return output, nil
+}
 
 // lineBreak() takes a string and an int. It splits the string into a slice of
 // string where each string fits in max length
@@ -50,89 +164,4 @@ func lineBreak(s string, max int) []string {
 		lines = append(lines, currentLine)
 	}
 	return lines
-}
-
-func RenderCowsay(message string, width int) string {
-
-	// Slice of string to hold the message lines
-	messageLines := lineBreak(message, width)
-	
-	// Update/shrink width if the longest line is shorter
-	// than width
-	longestLine := 0
-	for _, l := range messageLines {
-		if len([]rune(l)) > longestLine {
-			longestLine = len([]rune(l))
-		}
-	}
-	width = longestLine
-	
-	// Pad shorter lines with trailing spaces so all lines are
-	// the same length
-	for i, l := range messageLines {
-		spacesToAdd := longestLine - len([]rune(l))
-		messageLines[i] += strings.Repeat(" ", spacesToAdd)
-	}
-	
-	// Build the speech bubble with text
-	var builder strings.Builder
-
-	// Top
-	topBorder := "_"
-	builder.WriteRune(' ')
-	builder.WriteString(strings.Repeat(topBorder, width + 2))
-	builder.WriteString(" \n")
-	
-	// Lines with text. Borders depend on the number of lines.
-	//  ________        _______        _________
-	// < 1 line >      / two   \      / three   \
-	//  --------       \ lines /      | lines   |
-	//                  -------       \ or more /
-	//                                 --------- 
-	numLines := len(messageLines)
-	leftBorder := "< "
-	rightBorder := " >\n"
-	for i, l := range messageLines {
-		if numLines > 1 {
-			if i == 0 {
-				leftBorder = "/ "
-				rightBorder = " \\\n"
-			} else if i == numLines - 1 {
-				leftBorder = "\\ "
-				rightBorder = " /\n"
-			} else {
-				leftBorder = "| "
-				rightBorder = " |\n"
-			}
-		}
-		builder.WriteString(leftBorder)
-		builder.WriteString(l)
-		builder.WriteString(rightBorder)
-	}
-	
-	// Bottom
-	bottomBorder := "-"
-	builder.WriteRune(' ')
-	builder.WriteString(strings.Repeat(bottomBorder, width + 2))
-	builder.WriteString(" ")
-
-	output := builder.String()
-
-	// Add cow, TODO: configurable with variables or cowfiles?
-	output += `
-        \   ^__^
-         \  (oo)\_______
-            (__)\       )\/\
-                ||----w |
-                ||     ||
-`
-// Notes about original cowsay(1) options:
-// width (default 40)
-// eyes (user input"
-// tongue (user input)
-// think (boolean)
-// cowfile
-// mode: borg, dead, greedy, paranoia, stoned, tired, wired, youthful
-// 		 (if mode is supplied, eyes and tongue parameters are ignored)
-	return output
 }
