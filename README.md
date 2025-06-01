@@ -20,8 +20,8 @@ $ curl 'http://localhost:8080/plain?text=this+is+also+a+way+to+spend+a+sunday&wi
 
 For now it takes two parameters:
 
--text=<what the cow will say>
--width=<maximum number of columns of text in one line>
+- text=what the cow will say
+- width=maximum number of columns of text in one line
 
 There is preliminary support for templates, such as the default.cow file used by default. It is a cow. There is also preliminary support for modifying eyes and tongue through parameters, and for the different standard modes: borg, dead, greedy, paranoia, stoned, tired, wired, and youthful.
 
