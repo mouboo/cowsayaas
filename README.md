@@ -27,4 +27,12 @@ There is preliminary support for templates, such as the default.cow file used by
 
 Beyond that, the future plan is to also accept requests in JSON and gRPC format.
 
+It has no OS dependencies and uses no third party libraries.
+
+Make sure you run the main.go from the root directory:
+
+```bash
+$ go run ./cmd/cowsayaas
+```
+
 This idea came to me while taking a shower, and any code in this repository that can be seen as an original work is licensed under the Unlicense license, which means that you are free to do anything you want with it.
