@@ -53,6 +53,7 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Write to the ResponseWriter
     w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprint(w, response)
+	fmt.Fprintln(w, response)
+	log.Println("response sent")
 	return
 }
