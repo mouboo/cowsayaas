@@ -1,6 +1,6 @@
 # Cowsay as a Service
 
-User curl(1) or similar tools to receive cowsay messages from a server.
+Use curl(1) or similar tools to receive cowsay messages from a server.
 
 Example:
 
