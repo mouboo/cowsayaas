@@ -78,7 +78,7 @@ func RenderCowsay(c spec.CowSpec) (string, error) {
 
 	output := b.String()
 
-	// Add cow, with possible modifications
+	// Add cow, with possible template modifications
 	//        \   ^__^
 	//         \  (oo)\_______
 	//            (__)\       )\/\

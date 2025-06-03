@@ -22,14 +22,14 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	// Fill in a CowSpec with all the options
 	c := spec.NewCowSpec()
 	
-	// Text is a required parameter
+	// Text is a required string parameter
 	c.Text = r.URL.Query().Get("text")
 	if c.Text == "" {
 		http.Error(w, "Missing text parameter", http.StatusBadRequest)
 		return
 	}
 	
-	// Width is an optional parameter, representing the maximum width
+	// Width is an optional integer parameter, representing the maximum width
 	// of the text (sans borders) displayed. Default: 40.
 	widthStr := r.URL.Query().Get("width")	
 	if widthStr != "" {
@@ -44,6 +44,16 @@ func PlainHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		c.Width = widthParsed
 	}
+	
+	// Eyes is an optional parameter, if not set the template cow-file will
+	// fill in a default
+	c.Eyes = r.URL.Query().Get("eyes")
+	
+	// Tongue is an optional parameter, if not set the template cow-file will
+	// fill in a default
+	c.Tongue = r.URL.Query().Get("tongue")
+	
+	//
 	
 	response, err := cowsay.RenderCowsay(c)
 	if err != nil {
