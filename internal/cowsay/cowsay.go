@@ -8,7 +8,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mouboo/cowsayaas/internal/spec"
+	"github.com/mouboo/cowsayaas/internal/cowspec"
 )
 
 // RenderCowsay generates "ascii" art of a cow with a speech bubble based

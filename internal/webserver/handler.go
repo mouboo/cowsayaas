@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/mouboo/cowsayaas/internal/cowsay"
-	"github.com/mouboo/cowsayaas/internal/spec"
+	"github.com/mouboo/cowsayaas/internal/cowspec"
 )
 
 // DocsHandler handles serving embedded static html files

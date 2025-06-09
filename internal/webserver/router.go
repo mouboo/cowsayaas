@@ -12,11 +12,9 @@ func SetupRoutes() *http.ServeMux {
 	// Serve cowsays with a plain text http interface
 	mux.HandleFunc("/plain", PlainHandler)
 	
+	// Serve docs from static html files
 	docsFileServer := http.FileServer(http.Dir("./assets/docs"))
 	mux.Handle("/docs/", http.StripPrefix("/docs", docsFileServer))
-	
-	// Serve a help page through embedded static html
-	//mux.Handle("/docs/", http.StripPrefix("/docs", http.FileServer(http.FS(assets.DocsFS()))
 	
 	// Redirect /docs to /docs/ so index.html is served
 	mux.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
