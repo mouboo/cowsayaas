@@ -2,19 +2,14 @@ package cowsay
 
 import (
 	"bytes"
-	"embed"
+	"path/filepath"
 	"fmt"
-	//"os"
+	"os"
 	"strings"
 	"text/template"
 
 	"github.com/mouboo/cowsayaas/internal/spec"
 )
-
-// Embed cow template files
-//
-//go:embed cows/*.cow
-var cowsFS embed.FS
 
 // RenderCowsay generates "ascii" art of a cow with a speech bubble based
 // on a given CowSpec.
@@ -92,7 +87,9 @@ func RenderCowsay(c spec.CowSpec) (string, error) {
 	//                ||     ||
 
 	// Load cow template file
-	templateBytes, err := cowsFS.ReadFile("cows/" + c.File + ".cow")
+	cowsdir := "./assets/cows"
+	templateBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File + ".cow"))
+	//templateBytes, err := cowsFS.ReadFile("cows/" + c.File + ".cow")
 	if err != nil {
 		return "", fmt.Errorf("Failed to read cowfile: %w", err)
 	}
