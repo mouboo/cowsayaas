@@ -10,6 +10,12 @@ import (
 	"github.com/mouboo/cowsayaas/internal/spec"
 )
 
+// DocsHandler handles serving embedded static html files
+func DocsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprintln(w, "test DocsHandler")
+}
+
 // PlainHandler handles the plain text API
 func PlainHandler(w http.ResponseWriter, r *http.Request) {
 	// First make sure the request is valid (GET)

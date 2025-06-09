@@ -1,0 +1,6 @@
+        \   ^__^
+         \  ({{if .Eyes}}{{.Eyes}}{{else}}oo{{end}})\_______
+            (__)\       )\/\
+             {{if .Tongue}}{{.Tongue}}{{else}} {{end}}  ||----w |
+                ||     ||
+
