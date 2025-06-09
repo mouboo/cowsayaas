@@ -17,7 +17,7 @@ func DocsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // PlainHandler handles the plain text API
-func PlainHandler(w http.ResponseWriter, r *http.Request) {
+func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	// First make sure the request is valid (GET)
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)

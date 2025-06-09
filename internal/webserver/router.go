@@ -2,15 +2,13 @@ package webserver
 
 import (
 	"net/http"
-	
-	//"github.com/mouboo/cowsayaas/internal/assets"
 )
 
 func SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
 	
 	// Serve cowsays with a plain text http interface
-	mux.HandleFunc("/plain", PlainHandler)
+	mux.HandleFunc("/api", ApiHandler)
 	
 	// Serve docs from static html files
 	docsFileServer := http.FileServer(http.Dir("./assets/docs"))
