@@ -1,38 +1,64 @@
 package webserver
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/mouboo/cowsayaas/internal/cowsay"
 	"github.com/mouboo/cowsayaas/internal/cowspec"
 )
 
-// DocsHandler handles serving embedded static html files
-func DocsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintln(w, "test DocsHandler")
-}
-
-// PlainHandler handles the plain text API
+// ApiHandler handles requests in various forms, urlencoded, JSON, etc.
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	// First make sure the request is valid (GET)
-	if r.Method != http.MethodGet {
-		w.Header().Set("Allow", http.MethodGet)
+	c := cowspec.NewCowSpec()
+	var err error
+
+	// Figure out what kind of request it is, and populate the cowspec
+	// with the use of helper functions.
+	if r.Method == http.MethodGet {
+		c, err = parseFromQuery(r)
+	} else if r.Method == http.MethodPost {
+		contentType := r.Header.Get("Content-Type")
+		if strings.HasPrefix(contentType, "application/json") {
+			err = parseFromJSON(r, &c)
+		} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+			c, err = parseFromForm(r)
+		} else {
+			http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
+			return
+		}
+	} else {
+		w.Header().Set("Allow", "GET, POST")
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Fill in a CowSpec with all the options
-	c := spec.NewCowSpec()
+	// Render the cowsay according to the cowspec
+	response, err := cowsay.RenderCowsay(c)
+	if err != nil {
+		log.Printf("RenderCowsay error: %v", err)
+		http.Error(w, "Internal server error in rendering", http.StatusInternalServerError)
+		return
+	}
+	// Write to the ResponseWriter
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprintln(w, response)
+	log.Println("response sent")
+	return
+}
 
-	// Text is a required string parameter
+func parseFromQuery(r *http.Request) (cowspec.CowSpec, error) {
+	c := cowspec.NewCowSpec()
+
+	// Text is an optional string parameter, defaults to "Moo!"
 	c.Text = r.URL.Query().Get("text")
 	if c.Text == "" {
-		http.Error(w, "Missing text parameter", http.StatusBadRequest)
-		return
+		c.Text = "Moo!"
 	}
 
 	// Width is an optional integer parameter, representing the maximum width
@@ -41,12 +67,12 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	if widthStr != "" {
 		widthParsed, err := strconv.Atoi(widthStr)
 		if err != nil {
-			http.Error(w, "Invalid width parameter", http.StatusBadRequest)
-			return
+			//http.Error(w, "Invalid width parameter", http.StatusBadRequest)
+			return c, err
 		}
 		if widthParsed < 1 {
-			http.Error(w, "width must be a positive number", http.StatusBadRequest)
-			return
+			//http.Error(w, "width must be a positive number", http.StatusBadRequest)
+			return c, err
 		}
 		c.Width = widthParsed
 	}
@@ -95,16 +121,20 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		c.Tongue = tmpTongue
 	}
 
-	// Render the cowsay according to the cowspec
-	response, err := cowsay.RenderCowsay(c)
+	return c, nil
+}
+
+func parseFromJSON(r *http.Request, c *cowspec.CowSpec) error {
+	defer r.Body.Close()
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("RenderCowsay error: %v", err)
-		http.Error(w, "Internal server error in rendering", http.StatusInternalServerError)
-		return
+		return err
 	}
-	// Write to the ResponseWriter
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintln(w, response)
-	log.Println("response sent")
-	return
+	err = json.Unmarshal(body, c)
+	return err
+}
+
+func parseFromForm(r *http.Request) (cowspec.CowSpec, error) {
+	c := cowspec.NewCowSpec()
+	return c, nil
 }

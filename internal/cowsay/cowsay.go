@@ -13,7 +13,7 @@ import (
 
 // RenderCowsay generates "ascii" art of a cow with a speech bubble based
 // on a given CowSpec.
-func RenderCowsay(c spec.CowSpec) (string, error) {
+func RenderCowsay(c cowspec.CowSpec) (string, error) {
 
 	// Slice of string to hold the message lines
 	messageLines := lineBreak(c.Text, c.Width)
