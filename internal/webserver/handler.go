@@ -19,7 +19,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	// Figure out what kind of request it is, and populate the cowspec c
-	// with the use of helper functions.
+	// with the use of helper functions. TODO: add error handling
 	if r.Method == http.MethodGet {
 		err = parseFromQuery(r, &c)
 	} else if r.Method == http.MethodPost {
