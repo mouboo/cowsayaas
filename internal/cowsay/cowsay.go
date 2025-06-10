@@ -2,9 +2,9 @@ package cowsay
 
 import (
 	"bytes"
-	"path/filepath"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -86,10 +86,51 @@ func RenderCowsay(c cowspec.CowSpec) (string, error) {
 	//                ||----w |
 	//                ||     ||
 
-	// Load cow template file
+	// Modify cowspec fields based on stated mode
+	switch c.Mode {
+	case "borg":
+		if c.Eyes == "" {
+			c.Eyes = "=="
+		}
+	case "dead":
+		if c.Eyes == "" {
+			c.Eyes = "xx"
+		}
+		if c.Tongue == "" {
+			c.Tongue = "U"
+		}
+	case "greedy":
+		if c.Eyes == "" {
+			c.Eyes = "$$"
+		}
+	case "paranoia":
+		if c.Eyes == "" {
+			c.Eyes = "@@"
+		}
+	case "stoned":
+		if c.Eyes == "" {
+			c.Eyes = "**"
+		}
+		if c.Tongue == "" {
+			c.Tongue = "U"
+		}
+	case "tired":
+		if c.Eyes == "" {
+			c.Eyes = "--"
+		}
+	case "wired":
+		if c.Eyes == "" {
+			c.Eyes = "OO"
+		}
+	case "youthful":
+		if c.Eyes == "" {
+			c.Eyes = ".."
+		}
+	}
+
+	// Load cow template file named in c.File, defaults to "default"
 	cowsdir := "./assets/cows"
-	templateBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File + ".cow"))
-	//templateBytes, err := cowsFS.ReadFile("cows/" + c.File + ".cow")
+	templateBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File+".cow"))
 	if err != nil {
 		return "", fmt.Errorf("Failed to read cowfile: %w", err)
 	}

@@ -19,7 +19,6 @@ func SetupRoutes() *http.ServeMux {
 		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
 	})
 	
-	//mux.HandleFunc("/docs", DocsHandler)
 	
 	return mux
 }

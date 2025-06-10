@@ -18,16 +18,16 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	c := cowspec.NewCowSpec()
 	var err error
 
-	// Figure out what kind of request it is, and populate the cowspec
+	// Figure out what kind of request it is, and populate the cowspec c
 	// with the use of helper functions.
 	if r.Method == http.MethodGet {
-		c, err = parseFromQuery(r)
+		err = parseFromQuery(r, &c)
 	} else if r.Method == http.MethodPost {
 		contentType := r.Header.Get("Content-Type")
 		if strings.HasPrefix(contentType, "application/json") {
 			err = parseFromJSON(r, &c)
 		} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
-			c, err = parseFromForm(r)
+			err = parseFromForm(r, &c)
 		} else {
 			http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
 			return
@@ -52,89 +52,83 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func parseFromQuery(r *http.Request) (cowspec.CowSpec, error) {
-	c := cowspec.NewCowSpec()
+func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
+	var err error
 
-	// Text is an optional string parameter, defaults to "Moo!"
-	c.Text = r.URL.Query().Get("text")
-	if c.Text == "" {
-		c.Text = "Moo!"
+	// Parse text
+	if v := r.URL.Query().Get("text"); v != "" {
+		c.Text = v
 	}
-
-	// Width is an optional integer parameter, representing the maximum width
-	// of the text (sans borders) displayed. Default: 40.
-	widthStr := r.URL.Query().Get("width")
-	if widthStr != "" {
-		widthParsed, err := strconv.Atoi(widthStr)
+	// Parse width
+	if v := r.URL.Query().Get("width"); v != "" {
+		width, err := strconv.Atoi(v)
 		if err != nil {
-			//http.Error(w, "Invalid width parameter", http.StatusBadRequest)
-			return c, err
+			return err
 		}
-		if widthParsed < 1 {
-			//http.Error(w, "width must be a positive number", http.StatusBadRequest)
-			return c, err
-		}
-		c.Width = widthParsed
+		c.Width = width
 	}
-
-	// File is optional, defaults to "default"
-	tmpFile := r.URL.Query().Get("file")
-	if tmpFile != "" {
-		c.File = tmpFile
+	// Parse file
+	if v := r.URL.Query().Get("file"); v != "" {
+		c.File = v
 	}
-
-	// Modes set both eyes and tongue. Can be individually overridden with eyes
-	// and/or tongue parameters.
-	// borg, dead, greedy, paranoia, stoned, tired, wired, youthful
-	switch r.URL.Query().Get("mode") {
-	case "borg":
-		c.Eyes = "=="
-	case "dead":
-		c.Eyes = "xx"
-		c.Tongue = "U"
-	case "greedy":
-		c.Eyes = "$$"
-	case "paranoia":
-		c.Eyes = "@@"
-	case "stoned":
-		c.Eyes = "**"
-		c.Tongue = "U"
-	case "tired":
-		c.Eyes = "--"
-	case "wired":
-		c.Eyes = "OO"
-	case "youthful":
-		c.Eyes = ".."
+	// Parse eyes
+	if v := r.URL.Query().Get("eyes"); v != "" {
+		c.Eyes = v
 	}
-
-	// Eyes is an optional parameter, if not set the template cow-file will
-	// fill in a default
-	tmpEyes := r.URL.Query().Get("eyes")
-	if tmpEyes != "" {
-		c.Eyes = tmpEyes
+	// Parse tongue
+	if v := r.URL.Query().Get("tongue"); v != "" {
+		c.Tongue = v
 	}
-
-	// Tongue is an optional parameter, if not set the template cow-file will
-	// fill in a default
-	tmpTongue := r.URL.Query().Get("tongue")
-	if tmpTongue != "" {
-		c.Tongue = tmpTongue
-	}
-
-	return c, nil
+	return err
 }
 
+// Parsing request data from JSON into the cowspec
 func parseFromJSON(r *http.Request, c *cowspec.CowSpec) error {
+	// Make sure the reader closes before the function ends
 	defer r.Body.Close()
+	// Read the (JSON) body into the variable body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}
+	// Fill in the struct at c with the data from the JSON request body
 	err = json.Unmarshal(body, c)
+	// If all went well, err is nil
 	return err
 }
 
-func parseFromForm(r *http.Request) (cowspec.CowSpec, error) {
-	c := cowspec.NewCowSpec()
-	return c, nil
+// Parsing request data from form urlencoded into the cowspec
+func parseFromForm(r *http.Request, c *cowspec.CowSpec) error {
+	var err error
+
+	if err := r.ParseForm(); err != nil {
+		return err
+	}
+
+	if v := r.Form.Get("text"); v != "" {
+		c.Text = v
+	}
+	if v := r.Form.Get("width"); v != "" {
+		if width, err := strconv.Atoi(v); err == nil {
+			c.Width = width
+		}
+	}
+	if v := r.Form.Get("think"); v != "" {
+		if v == "true" || v == "True" {
+			c.Think = true
+		}
+	}
+	if v := r.Form.Get("file"); v != "" {
+		c.File = v
+	}
+	if v := r.Form.Get("mode"); v != "" {
+		c.Mode = v
+	}
+	if v := r.Form.Get("eyes"); v != "" {
+		c.Eyes = v
+	}
+	if v := r.Form.Get("tongue"); v != "" {
+		c.Tongue = v
+	}
+	return err
 }
