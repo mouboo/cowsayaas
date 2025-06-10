@@ -19,7 +19,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	// Figure out what kind of request it is, and populate the cowspec c
-	// with the use of helper functions. TODO: add error handling
+	// with the use of helper functions.
 	if r.Method == http.MethodGet {
 		err = parseFromQuery(r, &c)
 	} else if r.Method == http.MethodPost {
@@ -37,6 +37,12 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+	// Deal with parsing errors
+	if err != nil {
+		log.Printf("Parse error: %v", err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+    }
 
 	// Render the cowsay according to the cowspec
 	response, err := cowsay.RenderCowsay(c)
@@ -53,7 +59,6 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
-	var err error
 
 	// Parse text
 	if v := r.URL.Query().Get("text"); v != "" {
@@ -63,7 +68,7 @@ func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
 	if v := r.URL.Query().Get("width"); v != "" {
 		width, err := strconv.Atoi(v)
 		if err != nil {
-			return err
+			return fmt.Errorf("invalid width parameter: %w", err)
 		}
 		c.Width = width
 	}
@@ -79,7 +84,7 @@ func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
 	if v := r.URL.Query().Get("tongue"); v != "" {
 		c.Tongue = v
 	}
-	return err
+	return nil
 }
 
 // Parsing request data from JSON into the cowspec
@@ -89,34 +94,37 @@ func parseFromJSON(r *http.Request, c *cowspec.CowSpec) error {
 	// Read the (JSON) body into the variable body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read request body: %w", err)
 	}
 	// Fill in the struct at c with the data from the JSON request body
-	err = json.Unmarshal(body, c)
-	// If all went well, err is nil
-	return err
+	if err := json.Unmarshal(body, c); err != nil {
+		return fmt.Errorf("failed to parse JSON: %w", err)
+	}
+	return nil
 }
 
 // Parsing request data from form urlencoded into the cowspec
 func parseFromForm(r *http.Request, c *cowspec.CowSpec) error {
-	var err error
-
 	if err := r.ParseForm(); err != nil {
-		return err
+		return fmt.Errorf("failed to parse form: %w", err)
 	}
 
 	if v := r.Form.Get("text"); v != "" {
 		c.Text = v
 	}
 	if v := r.Form.Get("width"); v != "" {
-		if width, err := strconv.Atoi(v); err == nil {
-			c.Width = width
+		width, err := strconv.Atoi(v)
+		if err != nil {
+			return fmt.Errorf("invalid width parameter: %w", err)
 		}
+		c.Width = width
 	}
 	if v := r.Form.Get("think"); v != "" {
-		if v == "true" || v == "True" {
-			c.Think = true
+		think, err := strconv.ParseBool(v)
+		if err != nil {
+			return fmt.Errorf("invalid think parameter: %w", err)
 		}
+		c.Think = think
 	}
 	if v := r.Form.Get("file"); v != "" {
 		c.File = v
@@ -130,5 +138,5 @@ func parseFromForm(r *http.Request, c *cowspec.CowSpec) error {
 	if v := r.Form.Get("tongue"); v != "" {
 		c.Tongue = v
 	}
-	return err
+	return nil
 }
