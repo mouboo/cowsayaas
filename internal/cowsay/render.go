@@ -7,13 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-
-	"github.com/mouboo/cowsayaas/internal/cowspec"
 )
 
 // RenderCowsay generates "ascii" art of a cow with a speech bubble based
 // on a given CowSpec.
-func RenderCowsay(c cowspec.CowSpec) (string, error) {
+func RenderCowsay(c CowConfig) (string, error) {
 
 	// Slice of string to hold the message lines
 	messageLines := lineBreak(c.Text, c.Width)

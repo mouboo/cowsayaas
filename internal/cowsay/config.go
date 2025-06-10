@@ -1,9 +1,9 @@
 // spec declares a type that specifies what the user requests in terms of
 // cow appearance. It is used by the handler and the renderer. It has a
 // constructor with some defaults.
-package cowspec
+package cowsay
 
-type CowSpec struct {
+type CowConfig struct {
 	Text   string	`json:"text"`
 	Width  int		`json:"width"`
 	Think  bool		`json:"think"`
@@ -13,8 +13,8 @@ type CowSpec struct {
 	Tongue string	`json:"tongue"`
 }
 
-func NewCowSpec() CowSpec {
-	return CowSpec{
+func NewCowConfig() CowConfig {
+	return CowConfig{
 		Text:   "Moo!",
 		Width:  40,
 		Think:  false,

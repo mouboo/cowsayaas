@@ -1,4 +1,4 @@
-package webserver
+package cowsay
 
 import (
 	"net/http"

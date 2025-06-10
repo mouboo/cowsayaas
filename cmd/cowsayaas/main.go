@@ -4,15 +4,15 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/mouboo/cowsayaas/internal/webserver"
+	
+	"github.com/mouboo/cowsayaas/internal/cowsay"
 )
 
 func main() {
 
 	// Set up multiplexer for HTTP requests, routing them
 	// to different handlers
-	mux := webserver.SetupRoutes()
+	mux := cowsay.SetupRoutes()
 
 	// Start the web server
 	log.Println("Starting server")

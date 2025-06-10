@@ -1,4 +1,4 @@
-package webserver
+package cowsay
 
 import (
 	"encoding/json"
@@ -8,14 +8,11 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/mouboo/cowsayaas/internal/cowsay"
-	"github.com/mouboo/cowsayaas/internal/cowspec"
 )
 
 // ApiHandler handles requests in various forms, urlencoded, JSON, etc.
 func ApiHandler(w http.ResponseWriter, r *http.Request) {
-	c := cowspec.NewCowSpec()
+	c := NewCowConfig()
 	var err error
 
 	// Figure out what kind of request it is, and populate the cowspec c
@@ -45,7 +42,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// Render the cowsay according to the cowspec
-	response, err := cowsay.RenderCowsay(c)
+	response, err := RenderCowsay(c)
 	if err != nil {
 		log.Printf("RenderCowsay error: %v", err)
 		http.Error(w, "Internal server error in rendering", http.StatusInternalServerError)
@@ -58,7 +55,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
+func parseFromQuery(r *http.Request, c *CowConfig) error {
 
 	// Parse text
 	if v := r.URL.Query().Get("text"); v != "" {
@@ -88,7 +85,7 @@ func parseFromQuery(r *http.Request, c *cowspec.CowSpec) error {
 }
 
 // Parsing request data from JSON into the cowspec
-func parseFromJSON(r *http.Request, c *cowspec.CowSpec) error {
+func parseFromJSON(r *http.Request, c *CowConfig) error {
 	// Make sure the reader closes before the function ends
 	defer r.Body.Close()
 	// Read the (JSON) body into the variable body
@@ -104,7 +101,7 @@ func parseFromJSON(r *http.Request, c *cowspec.CowSpec) error {
 }
 
 // Parsing request data from form urlencoded into the cowspec
-func parseFromForm(r *http.Request, c *cowspec.CowSpec) error {
+func parseFromForm(r *http.Request, c *CowConfig) error {
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("failed to parse form: %w", err)
 	}
