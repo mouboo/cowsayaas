@@ -69,9 +69,22 @@ func parseFromQuery(r *http.Request, c *CowConfig) error {
 		}
 		c.Width = width
 	}
+	// Parse think
+	if v := r.URL.Query().Get("think"); v != "" {
+		think, err := strconv.ParseBool(v)
+		if err != nil {
+			return fmt.Errorf("invalid think parameter: %w", err)
+		}
+		c.Think = think
+	}
+	
 	// Parse file
 	if v := r.URL.Query().Get("file"); v != "" {
 		c.File = v
+	}
+	// Parse mode
+	if v := r.URL.Query().Get("mode"); v != "" {
+		c.Mode = v
 	}
 	// Parse eyes
 	if v := r.URL.Query().Get("eyes"); v != "" {

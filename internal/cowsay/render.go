@@ -13,6 +13,7 @@ import (
 // on a given CowSpec.
 func RenderCowsay(c CowConfig) (string, error) {
 
+	// Top part - the speech bubble
 	// Slice of string to hold the message lines
 	messageLines := lineBreak(c.Text, c.Width)
 
@@ -127,7 +128,7 @@ func RenderCowsay(c CowConfig) (string, error) {
 	}
 
 	// Load cow template file named in c.File, defaults to "default"
-	cowsdir := "./assets/cows"
+	cowsdir := "./data/cows"
 	templateBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File+".cow"))
 	if err != nil {
 		return "", fmt.Errorf("Failed to read cowfile: %w", err)
