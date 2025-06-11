@@ -16,10 +16,8 @@ func RenderCowsay(c *CowConfig) (string, error) {
 
 	// 1. Prepare the text by wordwrapping it within a maximum width,
 	// and pad the other lines with spaces to have a uniform width.
-	messageLines, newWidth := formatText(c)
-	// Width may have become shorter than maximum allowed because of how
-	// lines break
-	c.Width = newWidth
+	messageLines, width := formatText(c.Text, c.Width)
+
 
 	// 2. Build the speech bubble with text. Borders depend on the number of lines.
 	//  ________        _______        _________
@@ -31,7 +29,7 @@ func RenderCowsay(c *CowConfig) (string, error) {
 
 	// Top
 	b.WriteRune(' ')
-	b.WriteString(strings.Repeat("_", c.Width+2))
+	b.WriteString(strings.Repeat("_", width+2))
 	b.WriteString(" \n")
 
 	// Middle (sides and text)           
@@ -58,7 +56,7 @@ func RenderCowsay(c *CowConfig) (string, error) {
 
 	// Bottom
 	b.WriteRune(' ')
-	b.WriteString(strings.Repeat("-", c.Width+2))
+	b.WriteString(strings.Repeat("-", width+2))
 	b.WriteString(" \n")
 
 	speechbubble := b.String()
@@ -143,17 +141,17 @@ func RenderCowsay(c *CowConfig) (string, error) {
 	return output, nil
 }
 
-// lineBreak() takes a string and an int. It splits the string into a slice of
-// string where each string fits in max length
-func formatText(c *CowConfig) ([]string, int) {
+// formatText() takes a string and an int. It splits the string into a slice of
+// strings where each string fits in max length.
+func formatText(text string, width int) ([]string, int) {
 	// Split the string into words. If a single word is longer than max,
 	// break it into max sized chunks.
 	var words []string
-	for _, word := range strings.Fields(c.Text) {
+	for _, word := range strings.Fields(text) {
 		runes := []rune(word)
-		for len(runes) > c.Width {
-			words = append(words, string(runes[:c.Width]))
-			runes = runes[c.Width:]
+		for len(runes) > width {
+			words = append(words, string(runes[:width]))
+			runes = runes[width:]
 		}
 		if len(runes) > 0 {
 			words = append(words, string(runes))
@@ -173,7 +171,7 @@ func formatText(c *CowConfig) ([]string, int) {
 		// if there's enough room in the current line, add a word
 		lineLen := utf8.RuneCountInString(currentLine)
 		wordLen := utf8.RuneCountInString(word)
-		if lineLen + wordLen + spaceNeeded <= c.Width {
+		if lineLen + wordLen + spaceNeeded <= width {
 			// insert either 0 or 1 spaces
 			currentLine += strings.Repeat(" ", spaceNeeded)
 			// insert the current word
@@ -191,7 +189,7 @@ func formatText(c *CowConfig) ([]string, int) {
 		lines = append(lines, currentLine)
 	}
 	
-	// Update Width field to be the length of the longest line after wordwrapping.
+	// Find length of the longest line after wordwrapping
 	longestLine := 0
 	for _, l := range lines {
 		if utf8.RuneCountInString(l) > longestLine {
