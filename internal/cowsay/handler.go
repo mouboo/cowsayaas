@@ -42,7 +42,7 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
     }
 
 	// Render the cowsay according to the cowspec
-	response, err := RenderCowsay(c)
+	response, err := RenderCowsay(&c)
 	if err != nil {
 		log.Printf("RenderCowsay error: %v", err)
 		http.Error(w, "Internal server error in rendering", http.StatusInternalServerError)

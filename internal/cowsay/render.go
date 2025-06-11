@@ -7,52 +7,38 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode/utf8"
 )
 
 // RenderCowsay generates "ascii" art of a cow with a speech bubble based
 // on a given CowSpec.
-func RenderCowsay(c CowConfig) (string, error) {
+func RenderCowsay(c *CowConfig) (string, error) {
 
-	// Top part - the speech bubble
-	// Slice of string to hold the message lines
-	messageLines := lineBreak(c.Text, c.Width)
+	// 1. Prepare the text by wordwrapping it within a maximum width,
+	// and pad the other lines with spaces to have a uniform width.
+	messageLines, newWidth := formatText(c)
+	// Width may have become shorter than maximum allowed because of how
+	// lines break
+	c.Width = newWidth
 
-	// Update/shrink width if the longest line is shorter
-	// than width
-	longestLine := 0
-	for _, l := range messageLines {
-		if len([]rune(l)) > longestLine {
-			longestLine = len([]rune(l))
-		}
-	}
-	c.Width = longestLine
-
-	// Pad shorter lines with trailing spaces so all lines are
-	// the same length
-	for i, l := range messageLines {
-		spacesToAdd := longestLine - len([]rune(l))
-		messageLines[i] += strings.Repeat(" ", spacesToAdd)
-	}
-
-	// Build the speech bubble with text
-	var b strings.Builder
-
-	// Top
-	topBorder := "_"
-	b.WriteRune(' ')
-	b.WriteString(strings.Repeat(topBorder, c.Width+2))
-	b.WriteString(" \n")
-
-	// Lines with text. Borders depend on the number of lines.
+	// 2. Build the speech bubble with text. Borders depend on the number of lines.
 	//  ________        _______        _________
 	// < 1 line >      / two   \      / three   \
 	//  --------       \ lines /      | lines   |
 	//                  -------       \ or more /
 	//                                 ---------
+	var b strings.Builder
+
+	// Top
+	b.WriteRune(' ')
+	b.WriteString(strings.Repeat("_", c.Width+2))
+	b.WriteString(" \n")
+
+	// Middle (sides and text)           
 	numLines := len(messageLines)
 	leftBorder := "< "
 	rightBorder := " >\n"
-	for i, l := range messageLines {
+	for i, text := range messageLines {
 		if numLines > 1 {
 			if i == 0 {
 				leftBorder = "/ "
@@ -66,19 +52,18 @@ func RenderCowsay(c CowConfig) (string, error) {
 			}
 		}
 		b.WriteString(leftBorder)
-		b.WriteString(l)
+		b.WriteString(text)
 		b.WriteString(rightBorder)
 	}
 
 	// Bottom
-	bottomBorder := "-"
 	b.WriteRune(' ')
-	b.WriteString(strings.Repeat(bottomBorder, c.Width+2))
+	b.WriteString(strings.Repeat("-", c.Width+2))
 	b.WriteString(" \n")
 
-	output := b.String()
+	speechbubble := b.String()
 
-	// Add cow, with possible template modifications
+	// 3. Add cow, with possible template modifications
 	//        \   ^__^
 	//         \  (oo)\_______
 	//            (__)\       )\/\
@@ -129,13 +114,13 @@ func RenderCowsay(c CowConfig) (string, error) {
 
 	// Load cow template file named in c.File, defaults to "default"
 	cowsdir := "./data/cows"
-	templateBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File+".cow"))
+	tmplBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File+".cow"))
 	if err != nil {
 		return "", fmt.Errorf("Failed to read cowfile: %w", err)
 	}
-
+	
 	// Parse the template
-	template, err := template.New("cow").Parse(string(templateBytes))
+	tmpl, err := template.New("cow").Parse(string(tmplBytes))
 	if err != nil {
 		return "", fmt.Errorf("Failed to parse template: %w", err)
 	}
@@ -143,29 +128,32 @@ func RenderCowsay(c CowConfig) (string, error) {
 	// Create buffer for the rendered cow
 	var cowBuf bytes.Buffer
 
-	// Execute the template with the CowSpec as input data
-	err = template.Execute(&cowBuf, c)
+	// Execute the template with the CowConfig as input data
+	err = tmpl.Execute(&cowBuf, c)
 	if err != nil {
 		return "", fmt.Errorf("Failed to execute template: %w", err)
 	}
 
 	// Add cow to output
-	output += cowBuf.String()
+	cow := cowBuf.String()
+
+	// Put it all together
+	output := speechbubble + cow
 
 	return output, nil
 }
 
 // lineBreak() takes a string and an int. It splits the string into a slice of
 // string where each string fits in max length
-func lineBreak(s string, max int) []string {
+func formatText(c *CowConfig) ([]string, int) {
 	// Split the string into words. If a single word is longer than max,
 	// break it into max sized chunks.
 	var words []string
-	for _, word := range strings.Fields(s) {
+	for _, word := range strings.Fields(c.Text) {
 		runes := []rune(word)
-		for len(runes) > max {
-			words = append(words, string(runes[:max]))
-			runes = runes[max:]
+		for len(runes) > c.Width {
+			words = append(words, string(runes[:c.Width]))
+			runes = runes[c.Width:]
 		}
 		if len(runes) > 0 {
 			words = append(words, string(runes))
@@ -182,9 +170,13 @@ func lineBreak(s string, max int) []string {
 		if currentLine == "" {
 			spaceNeeded = 0
 		}
-		// if there's space in the current line, add a word
-		if len([]rune(currentLine))+len([]rune(word))+spaceNeeded <= max {
+		// if there's enough room in the current line, add a word
+		lineLen := utf8.RuneCountInString(currentLine)
+		wordLen := utf8.RuneCountInString(word)
+		if lineLen + wordLen + spaceNeeded <= c.Width {
+			// insert either 0 or 1 spaces
 			currentLine += strings.Repeat(" ", spaceNeeded)
+			// insert the current word
 			currentLine += word
 		} else {
 			// if a new line is needed
@@ -198,5 +190,20 @@ func lineBreak(s string, max int) []string {
 	if currentLine != "" {
 		lines = append(lines, currentLine)
 	}
-	return lines
+	
+	// Update Width field to be the length of the longest line after wordwrapping.
+	longestLine := 0
+	for _, l := range lines {
+		if utf8.RuneCountInString(l) > longestLine {
+			longestLine = utf8.RuneCountInString(l)
+		}
+	}
+	
+	// Pad the shorter lines with spaces so all lines are equal length
+	for i, l := range lines {
+		spacesToAdd := longestLine - utf8.RuneCountInString(l)
+		lines[i] += strings.Repeat(" ", spacesToAdd)
+	}
+	
+	return lines, longestLine
 }
