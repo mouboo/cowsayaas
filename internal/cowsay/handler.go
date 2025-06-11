@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
 // ApiHandler handles requests in various forms, urlencoded, JSON, etc.
-func ApiHandler(w http.ResponseWriter, r *http.Request) {
+func APIHandler(w http.ResponseWriter, r *http.Request) {
 	c := NewCowConfig()
 	var err error
 
@@ -21,14 +22,22 @@ func ApiHandler(w http.ResponseWriter, r *http.Request) {
 		err = parseFromQuery(r, &c)
 	} else if r.Method == http.MethodPost {
 		contentType := r.Header.Get("Content-Type")
-		if strings.HasPrefix(contentType, "application/json") {
+		mediaType, _, errParse := mime.ParseMediaType(contentType)
+		if errParse != nil {
+			http.Error(w, "invalid Content-Type header", http.StatusBadRequest)
+		}
+		mediaType = strings.ToLower(mediaType)
+		
+		switch mediaType {
+		case "application/json":
 			err = parseFromJSON(r, &c)
-		} else if strings.HasPrefix(contentType, "application/x-www-form-urlencoded") {
+		case "application/x-www-form-urlencoded":
 			err = parseFromForm(r, &c)
-		} else {
-			http.Error(w, "Unsupported Content-Type", http.StatusUnsupportedMediaType)
+		default:
+			http.Error(w, "unsupported Content-Type", http.StatusUnsupportedMediaType)
 			return
 		}
+		
 	} else {
 		w.Header().Set("Allow", "GET, POST")
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
