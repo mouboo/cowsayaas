@@ -59,7 +59,7 @@ func APIHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Write to the ResponseWriter
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintln(w, response)
+	fmt.Fprint(w, response)
 	log.Println("response sent")
 	return
 }

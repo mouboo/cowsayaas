@@ -68,7 +68,7 @@ func RenderCowsay(c *CowConfig) (string, error) {
 	//                ||----w |
 	//                ||     ||
 
-	// Modify cowspec fields based on stated mode
+	// Modify CowConfig fields based on stated mode
 	switch c.Mode {
 	case "borg":
 		if c.Eyes == "" {
@@ -111,8 +111,8 @@ func RenderCowsay(c *CowConfig) (string, error) {
 	}
 
 	// Load cow template file named in c.File, defaults to "default"
-	cowsdir := "./data/cows"
-	tmplBytes, err := os.ReadFile(filepath.Join(cowsdir, c.File+".cow"))
+	// CowfileDir is defined in pathConfig.go
+	tmplBytes, err := os.ReadFile(filepath.Join(CowfileDir, c.File+".cow"))
 	if err != nil {
 		return "", fmt.Errorf("Failed to read cowfile: %w", err)
 	}
@@ -134,6 +134,9 @@ func RenderCowsay(c *CowConfig) (string, error) {
 
 	// Add cow to output
 	cow := cowBuf.String()
+	// Clean the cow from multiple newlines that might have been added by
+	// text editors, so that cow ends with exactly one newline
+	cow = strings.TrimRight(cow, "\n") + "\n"
 
 	// Put it all together
 	output := speechbubble + cow
