@@ -1,0 +1,14 @@
+[Unit]
+Description=Cowsay as a Service
+After=network.target
+
+[Service]
+Type=simple
+User=cowsayaas
+Environment=COWPORT=8081
+ExecStart=/srv/cowsayaas/cowsayaas
+WorkingDirectory=/srv/cowsayaas
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
