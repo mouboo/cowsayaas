@@ -11,7 +11,7 @@ func SetupRoutes() *http.ServeMux {
 	mux.HandleFunc("/api", APIHandler)
 	
 	// Serve docs from static html files
-	docsFileServer := http.FileServer(http.Dir("./assets/docs"))
+	docsFileServer := http.FileServer(http.Dir(DocsDir))
 	mux.Handle("/docs/", http.StripPrefix("/docs", docsFileServer))
 	
 	// Redirect /docs to /docs/ so index.html is served

@@ -1,3 +1,109 @@
+<!DOCTYPE html>
 <html>
-<p>hello world, this is index.html</p>
+<head>
+  <meta charset="UTF-8">
+  <title>Docs - Cowsay as a Service</title>
+</head>
+<body style="font-family: monospace;">
+<div style="max-width: 80ch; margin: 0 auto; white-space: pre-wrap;">
+<p> __________________________________________ 
+< Cowsay as a Service - User documentation >
+ ------------------------------------------ 
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+TL;DR
+
+You can send different types of HTTP requests to a server that will respond with a cow with a speech bubble, such as the one above. 
+
+
+OPTIONS
+
+- text     The text inside the speech bubble.
+
+- width    The maximum width (in characters) of the text.
+
+- file     The name of the template to use. Available templates are:
+           default, moose, bunny.
+
+- mode     Sets eyes and/or tongue. Available modes are:
+           borg, dead, greedy, paranoia, stoned, tired, wired, youthful.
+
+- eyes     Overrides eyes with the provided string
+
+- tongue   Overrides tongue with the provided string
+
+
+API
+      
+The API endpoint can be reached at http://&lt;host[:port]&gt;/api
+
+In these examples I will use curl(1), but if you prefer wget(1), nc(1), or your browser when possible, that is fine too.
+
+
+EXAMPLE 1 - A simple GET request
+
+$ curl 'http://localhost:8080/api?text=A+simple+GET+request&file=bunny'
+ ______________________ 
+< A simple GET request >
+ ---------------------- 
+  \
+   \   \
+        \ /\
+        ( )
+      .( o ).      
+
+
+EXAMPLE 2 - Form urlencoded POST
+
+$ curl -X POST \
+-H "Content-Type: application/x-www-form-urlencoded" \
+--data-urlencode "text=A form-urlencoded POST request, with many options set!" \
+--data-urlencode "width=20" \
+--data-urlencode "file=moose" \
+--data-urlencode "eyes=^^" \
+--data-urlencode "tongue=U" \
+'http://localhost:8080/api'
+ ____________________ 
+/ A form-urlencoded  \
+| POST request, with |
+\ many options set!  /
+ -------------------- 
+  \
+   \   \_\_    _/_/
+    \      \__/
+           (^^)\_______
+           (__)\       )\/\
+            U  ||----w |
+               ||     ||
+
+
+EXAMPLE 3 - JSON POST
+
+$ curl -X POST \
+-H "Content-Type: application/json" \
+-d '{"text": "I am a JSON cow!", "mode": "tired"}' \
+'http://localhost:8080/api'
+ __________________ 
+< I am a JSON cow! >
+ ------------------ 
+        \   ^__^
+         \  (--)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+(With curl(1) you can also put the JSON request in a file and use -d @filename.)
+
+
+CAVEATS
+
+Unicode is allowed, but depending on which font you use it doesn't always follow the monospaced metrics.
+</p>
+
+</div>
+</body>
 </html>
