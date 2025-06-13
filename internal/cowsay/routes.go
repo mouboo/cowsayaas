@@ -19,6 +19,9 @@ func SetupRoutes() *http.ServeMux {
 		http.Redirect(w, r, "/docs/", http.StatusMovedPermanently)
 	})
 	
+	// Serve homepage from static html
+	homepageFileServer := http.FileServer(http.Dir(HomepageDir))
+	mux.Handle("/", http.StripPrefix("/", homepageFileServer))
 	
 	return mux
 }

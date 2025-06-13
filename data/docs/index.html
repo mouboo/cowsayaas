@@ -5,7 +5,7 @@
   <title>Docs - Cowsay as a Service</title>
 </head>
 <body style="font-family: monospace;">
-<div style="max-width: 80ch; margin: 0 auto; white-space: pre-wrap;">
+<div style="max-width: 80ch; margin: 0 auto; white-space: pre-wrap; background-color: #fffedf;">
 <p> __________________________________________ 
 < Cowsay as a Service - User documentation >
  ------------------------------------------ 
@@ -15,9 +15,9 @@
                 ||----w |
                 ||     ||
 
-TL;DR
+SYNOPSIS
 
-You can send different types of HTTP requests to a server that will respond with a cow with a speech bubble, such as the one above. 
+Send HTTP requests with options to a server that will respond with a cowsay text art such as the one above. The requests can be either plaintext GET, urlencoded POST, or JSON POST. Regardless of the request format, the response is always a plaintext string. (See examples below.)
 
 
 OPTIONS
@@ -41,7 +41,7 @@ API
       
 The API endpoint can be reached at http://&lt;host[:port]&gt;/api
 
-In these examples I will use curl(1), but if you prefer wget(1), nc(1), or your browser when possible, that is fine too.
+In these examples I will use curl(1), and the server is running on localhost. If you prefer wget(1), nc(1), or your browser when possible, that is fine too.
 
 
 EXAMPLE 1 - A simple GET request
@@ -101,7 +101,7 @@ $ curl -X POST \
 
 CAVEATS
 
-Unicode is allowed, but depending on which font you use it doesn't always follow the monospaced metrics.
+Unicode is allowed, but depending on which font you use it doesn't always adhere to the monospaced metrics.
 </p>
 
 </div>
