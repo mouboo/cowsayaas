@@ -1,38 +1,50 @@
 # Cowsay as a Service
 
-Use curl(1) or similar tools to receive cowsay messages from a server.
-
-Example:
-
-```bash
-$ curl 'http://localhost:8080/plain?text=this+is+also+a+way+to+spend+a+sunday&width=15'
- ________________ 
-/ this is also a \
-| way to spend a |
-\ sunday         /
- ---------------- 
+```text
+$ curl -X POST -H "Content-Type: application/json" \
+> -d '{
+> "text": "Code/Setup documentation",
+> "width": 15,
+> "eyes": "^^"
+> }' 'https://cowsay.4d41.se/api'
+ _______________ 
+/ Code/Setup    \
+\ documentation /
+ --------------- 
         \   ^__^
-         \  (oo)\_______
+         \  (^^)\_______
             (__)\       )\/\
                 ||----w |
                 ||     ||
 ```
 
-For now it takes two parameters:
-
-- text=what the cow will say
-- width=maximum number of columns of text in one line
-
-There is preliminary support for templates, such as the default.cow file used by default. It is a cow. There is also preliminary support for modifying eyes and tongue through parameters, and for the different standard modes: borg, dead, greedy, paranoia, stoned, tired, wired, and youthful.
-
-Beyond that, the future plan is to also accept requests in JSON and gRPC format.
-
-It has no OS dependencies and uses no third party libraries.
-
-Make sure you run the main.go from the root directory:
-
-```bash
-$ go run ./cmd/cowsayaas
+## Setup docuementation
+  
+Compile the binary from the project root directory with:
+```
+go build -o cowsayaas ./cmd/cowsayaas
 ```
 
-This idea came to me while taking a shower, and any code in this repository that can be seen as an original work is licensed under the Unlicense license, which means that you are free to do anything you want with it.
+On your server you will need the binary, and the /data directory.
+```
+.
+├── cowsayaas
+└── data
+    ├── cows
+    │   ├── bunny.cow
+    │   ├── default.cow
+    │   └── moose.cow
+    ├── docs
+    │   └── index.html
+    └── homepage
+        └── index.html
+```
+
+The following example describes one way to deploy Cowsay as a Service where:
+- The project lives in ```/srv/cowsayaas/```
+- The system user ```cowsayaas``` owns the files and process
+- The service is managed by systemd
+- Caddy is a reverse proxy
+
+
+
