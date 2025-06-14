@@ -20,7 +20,7 @@ $ curl -X POST -H "Content-Type: application/json" \
 
 (For user documentation, please see the file data/docs/index.html, or go [here](https://cowsay.4d41.se/docs/))
 
-## Code/Setup docuementation
+## Code/Setup documentation
   
 Compile the binary from the project root directory with:
 ```
@@ -50,11 +50,11 @@ server$ sudo useradd --system --no-create-home --shell /usr/sbin/nologin cowsaya
 ```bash
 server$ sudo mkdir -p /srv/cowsayaas
 ```
-4. Put the cowsayaas binary and the data/ directory in /srv/cowsayaas/. From your local computer you can for example run:
+4. Put the ```cowsayaas``` binary and the ```data/``` directory in ```/srv/cowsayaas/```. From your local computer you can for example run:
 ```bash
 local$ scp -r cowsayaas data/ <username>@<host>:~/
 ```
-and then on your server, copy those files to /srv/cowsayaas:
+and then on your server, copy those files to ```/srv/cowsayaas```:
 ```bash
 server$ sudo cp -r cowsayaas data/ /srv/cowsayaas/
 ```
